@@ -1,0 +1,8 @@
+---
+description: How to write tests in this project
+alwaysApply: false
+---
+- Use Vitest (import describe, it, expect from 'vitest') and @testing-library/react for components.
+- Name each test after its acceptance criterion: it('DHC-2 AC3: overall score is the average of area scores', ...)
+- Test what the user can see (text, roles, labels), not internal state.
+- Keep each test next to the file it tests: scoring.ts -> scoring.test.ts

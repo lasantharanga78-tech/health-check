@@ -1,0 +1,33 @@
+name: PR summary to Jira
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  comment:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post the PR summary as a Jira comment
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          BRANCH: ${{ github.head_ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          KEY=$(echo "$BRANCH" | grep -oE '^[A-Z]+-[0-9]+' || true)
+          if [ -z "$KEY" ]; then
+            echo "No Jira key at the start of branch '$BRANCH'. Skipping."
+            exit 0
+          fi
+          TEXT=$(printf 'Pull request merged: %s\n%s\n\n%s' "$PR_TITLE" "$PR_URL" "$PR_BODY")
+          jq -n --arg body "$TEXT" '{body: $body}' > payload.json
+          curl --fail-with-body -sS -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -X POST --data @payload.json \
+            "$JIRA_BASE_URL/rest/api/2/issue/$KEY/comment"
+          echo "Comment added to $KEY"

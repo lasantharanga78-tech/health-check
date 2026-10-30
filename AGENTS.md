@@ -32,6 +32,7 @@ React and TypeScript, Vite, Recharts, Vitest and Testing Library, Oxlint, and pl
 - Work on one Jira story at a time.
 - Name branches `DHC-<n>-short-name`.
 - Start commit messages with the key, for example `DHC-3: add results table`.
+- In branch names, commit messages, PR titles, and PR descriptions, mention only the current story’s key. Refer to any other story by its name. Jira links and moves every story whose key appears, so a second key in those places attaches the change to the wrong story.
 - Give every acceptance criterion a test named `DHC-<n> AC<k>: …`, unless `requirements.md` marks it `(manual)`.
 - Keep scoring logic in pure functions in `src/lib`.
 - Do not add npm packages without asking first.

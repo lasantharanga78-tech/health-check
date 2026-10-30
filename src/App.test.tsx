@@ -299,4 +299,36 @@ describe('App', () => {
     const saved = JSON.parse(localStorage.getItem('dhc-assessment')!) as { engagementName: string }
     expect(saved.engagementName).toBe('Next')
   })
+
+  it('DHC-6 AC1: Print / Save as PDF is present only while results are shown', () => {
+    render(<App />)
+
+    expect(screen.queryByRole('button', { name: 'Print / Save as PDF' })).not.toBeInTheDocument()
+
+    setName('A')
+    expect(screen.queryByRole('button', { name: 'Print / Save as PDF' })).not.toBeInTheDocument()
+
+    answerAll('4')
+    expect(screen.getByRole('button', { name: 'Print / Save as PDF' })).toBeInTheDocument()
+
+    setName('')
+    expect(screen.queryByRole('button', { name: 'Print / Save as PDF' })).not.toBeInTheDocument()
+
+    setName('A')
+    expect(screen.getByRole('button', { name: 'Print / Save as PDF' })).toBeInTheDocument()
+
+    setName('   ')
+    expect(screen.queryByRole('button', { name: 'Print / Save as PDF' })).not.toBeInTheDocument()
+  })
+
+  it('DHC-6 AC2: Print / Save as PDF calls window.print', () => {
+    const print = vi.spyOn(window, 'print').mockImplementation(() => {})
+    render(<App />)
+    setName('A')
+    answerAll('5')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Print / Save as PDF' }))
+
+    expect(print).toHaveBeenCalledTimes(1)
+  })
 })

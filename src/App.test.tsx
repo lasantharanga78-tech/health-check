@@ -130,6 +130,48 @@ describe('App', () => {
     expectPrompt()
   })
 
+  it('DHC-5 AC3: changing a score updates that area’s suggested actions', () => {
+    render(<App />)
+    setName('A')
+    answerAll('5')
+
+    const qualityActions = areas.find((area) => area.name === 'Quality')!.actions
+    const qualityBlock = () => {
+      const actions = screen.getByRole('region', { name: 'Suggested actions' })
+      const block = within(actions).getByRole('heading', { level: 3, name: 'Quality' }).parentElement
+      expect(block).not.toBeNull()
+      return block!
+    }
+    const scopeBlock = () => {
+      const actions = screen.getByRole('region', { name: 'Suggested actions' })
+      const block = within(actions).getByRole('heading', { level: 3, name: 'Scope' }).parentElement
+      expect(block).not.toBeNull()
+      return block!
+    }
+
+    expect(qualityBlock()).toHaveTextContent('No action needed')
+    expect(within(qualityBlock()).queryByRole('listitem')).not.toBeInTheDocument()
+
+    setAreaScore('Quality', '3')
+    expect(within(qualityBlock()).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      ...qualityActions,
+    ])
+    expect(within(qualityBlock()).queryByText('No action needed')).not.toBeInTheDocument()
+    expect(scopeBlock()).toHaveTextContent('No action needed')
+
+    setAreaScore('Quality', '1')
+    expect(within(qualityBlock()).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      ...qualityActions,
+    ])
+
+    setAreaScore('Quality', '5')
+    expect(qualityBlock()).toHaveTextContent('No action needed')
+    expect(within(qualityBlock()).queryByRole('listitem')).not.toBeInTheDocument()
+    for (const action of qualityActions) {
+      expect(within(qualityBlock()).queryByText(action)).not.toBeInTheDocument()
+    }
+  })
+
   it('DHC-4 AC1: the page shows a Start new assessment button', () => {
     render(<App />)
 

@@ -123,3 +123,9 @@ legend {
 .area-chart {
   margin: 1rem 0;
 }
+
+.start-new {
+  margin-top: 0.5rem;
+  font: inherit;
+  padding: 0.45rem 0.8rem;
+}

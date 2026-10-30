@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App.tsx'
 import { areas } from './data/questions.ts'
+import { todayIsoDate } from './lib/storage.ts'
 
 const prompt = 'Enter the engagement name and answer all 20 statements to see results.'
 
@@ -37,6 +38,15 @@ function expectResults() {
 }
 
 describe('App', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
   it('DHC-1 AC1: the page has one main heading, Delivery Health Check', () => {
     render(<App />)
 
@@ -118,5 +128,133 @@ describe('App', () => {
 
     setName('   ')
     expectPrompt()
+  })
+
+  it('DHC-4 AC1: the page shows a Start new assessment button', () => {
+    render(<App />)
+
+    expect(screen.getByRole('button', { name: 'Start new assessment' })).toBeInTheDocument()
+  })
+
+  it('DHC-4 AC2: a change is saved and restored after reload, including unanswered scores', () => {
+    const view = render(<App />)
+    setName('  Alpha  ')
+    fireEvent.change(screen.getByLabelText('Client'), { target: { value: '  Northwind  ' } })
+    fireEvent.change(screen.getByLabelText('Assessment date'), { target: { value: '2024-02-29' } })
+
+    const firstGroup = screen.getAllByRole('group')[0]
+    expect(firstGroup).toBeDefined()
+    fireEvent.click(within(firstGroup!).getByRole('radio', { name: '3' }))
+
+    const saved = localStorage.getItem('dhc-assessment')
+    expect(saved).not.toBeNull()
+    const parsed = JSON.parse(saved!) as {
+      engagementName: string
+      client: string
+      assessmentDate: string
+      scores: Array<number | null>
+    }
+    expect(parsed.engagementName).toBe('  Alpha  ')
+    expect(parsed.client).toBe('  Northwind  ')
+    expect(parsed.assessmentDate).toBe('2024-02-29')
+    expect(parsed.scores).toHaveLength(20)
+    expect(parsed.scores[0]).toBe(3)
+    expect(parsed.scores.slice(1).every((score) => score === null)).toBe(true)
+
+    expectPrompt()
+    view.unmount()
+    render(<App />)
+
+    expect(screen.getByLabelText('Engagement name')).toHaveValue('  Alpha  ')
+    expect(screen.getByLabelText('Client')).toHaveValue('  Northwind  ')
+    expect(screen.getByLabelText('Assessment date')).toHaveValue('2024-02-29')
+    const restored = screen.getAllByRole('group')[0]
+    expect(restored).toBeDefined()
+    expect(within(restored!).getByRole('radio', { name: '3' })).toBeChecked()
+    for (const group of screen.getAllByRole('group').slice(1)) {
+      for (const radio of within(group).getAllByRole('radio')) {
+        expect(radio).not.toBeChecked()
+      }
+    }
+    expectPrompt()
+  })
+
+  it('DHC-4 AC3: broken saved JSON opens an empty form', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 9, 30, 9, 0, 0))
+    localStorage.setItem('dhc-assessment', '{')
+
+    render(<App />)
+
+    expect(screen.getByLabelText('Engagement name')).toHaveValue('')
+    expect(screen.getByLabelText('Client')).toHaveValue('')
+    expect(screen.getByLabelText('Assessment date')).toHaveValue('2026-10-30')
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio).not.toBeChecked()
+    }
+    expectPrompt()
+    expect(localStorage.getItem('dhc-assessment')).toBe('{')
+  })
+
+  it('DHC-4 AC4: cancelling Start new assessment leaves the form and the saved value unchanged', () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false)
+    render(<App />)
+    setName('  Alpha  ')
+    fireEvent.change(screen.getByLabelText('Client'), { target: { value: 'Northwind' } })
+    fireEvent.change(screen.getByLabelText('Assessment date'), { target: { value: '2024-06-01' } })
+    fireEvent.click(within(screen.getAllByRole('group')[0]!).getByRole('radio', { name: '2' }))
+    const saved = localStorage.getItem('dhc-assessment')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Start new assessment' }))
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Start a new assessment? This clears the current answers.',
+    )
+    expect(screen.getByLabelText('Engagement name')).toHaveValue('  Alpha  ')
+    expect(screen.getByLabelText('Client')).toHaveValue('Northwind')
+    expect(screen.getByLabelText('Assessment date')).toHaveValue('2024-06-01')
+    expect(within(screen.getAllByRole('group')[0]!).getByRole('radio', { name: '2' })).toBeChecked()
+    expect(localStorage.getItem('dhc-assessment')).toBe(saved)
+  })
+
+  it('DHC-4 AC5: confirming Start new assessment clears the form and removes the saved value', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(2026, 0, 10, 9, 0, 0))
+    const view = render(<App />)
+    expect(screen.getByLabelText('Assessment date')).toHaveValue('2026-01-10')
+
+    setName('Alpha')
+    fireEvent.change(screen.getByLabelText('Client'), { target: { value: 'Northwind' } })
+    fireEvent.change(screen.getByLabelText('Assessment date'), { target: { value: '2024-06-01' } })
+    answerAll('5')
+    expectResults()
+
+    vi.setSystemTime(new Date(2026, 9, 30, 15, 0, 0))
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    fireEvent.click(screen.getByRole('button', { name: 'Start new assessment' }))
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      'Start a new assessment? This clears the current answers.',
+    )
+    expect(screen.getByLabelText('Engagement name')).toHaveValue('')
+    expect(screen.getByLabelText('Client')).toHaveValue('')
+    expect(screen.getByLabelText('Assessment date')).toHaveValue('2026-10-30')
+    for (const radio of screen.getAllByRole('radio')) {
+      expect(radio).not.toBeChecked()
+    }
+    expectPrompt()
+    expect(localStorage.getItem('dhc-assessment')).toBeNull()
+
+    view.unmount()
+    render(<App />)
+    expect(screen.getByLabelText('Engagement name')).toHaveValue('')
+    expect(screen.getByLabelText('Client')).toHaveValue('')
+    expect(screen.getByLabelText('Assessment date')).toHaveValue(todayIsoDate(new Date()))
+    expect(localStorage.getItem('dhc-assessment')).toBeNull()
+    expectPrompt()
+
+    setName('Next')
+    const saved = JSON.parse(localStorage.getItem('dhc-assessment')!) as { engagementName: string }
+    expect(saved.engagementName).toBe('Next')
   })
 })

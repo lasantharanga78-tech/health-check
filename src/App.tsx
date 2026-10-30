@@ -2,29 +2,43 @@ import { useState } from 'react'
 import { AssessmentForm } from './components/AssessmentForm.tsx'
 import { Results } from './components/Results.tsx'
 import { scoreAssessment } from './lib/scoring.ts'
-import { canShowResults, todayIsoDate } from './lib/storage.ts'
+import {
+  canShowResults,
+  clearAssessment,
+  emptyAssessment,
+  loadAssessment,
+  saveAssessment,
+  todayIsoDate,
+} from './lib/storage.ts'
 import type { Assessment, Score } from './lib/types.ts'
-
-function emptyAssessment(today: string): Assessment {
-  return {
-    engagementName: '',
-    client: '',
-    assessmentDate: today,
-    scores: Array.from({ length: 20 }, () => null),
-  }
-}
 
 export default function App() {
   const [assessment, setAssessment] = useState<Assessment>(() =>
-    emptyAssessment(todayIsoDate(new Date())),
+    loadAssessment(localStorage) ?? emptyAssessment(todayIsoDate(new Date())),
   )
 
-  function setScore(index: number, score: Score) {
+  function updateAssessment(updater: (current: Assessment) => Assessment) {
     setAssessment((current) => {
+      const next = updater(current)
+      saveAssessment(localStorage, next)
+      return next
+    })
+  }
+
+  function setScore(index: number, score: Score) {
+    updateAssessment((current) => {
       const scores = current.scores.slice()
       scores[index] = score
       return { ...current, scores }
     })
+  }
+
+  function startNewAssessment() {
+    const confirmed = window.confirm('Start a new assessment? This clears the current answers.')
+    if (!confirmed) return
+
+    clearAssessment(localStorage)
+    setAssessment(emptyAssessment(todayIsoDate(new Date())))
   }
 
   const showResults = canShowResults(assessment)
@@ -38,17 +52,18 @@ export default function App() {
       <AssessmentForm
         assessment={assessment}
         onName={(engagementName) =>
-          setAssessment((current) => ({ ...current, engagementName }))
+          updateAssessment((current) => ({ ...current, engagementName }))
         }
-        onClient={(client) => setAssessment((current) => ({ ...current, client }))}
+        onClient={(client) => updateAssessment((current) => ({ ...current, client }))}
         onDate={(assessmentDate) =>
-          setAssessment((current) => ({
+          updateAssessment((current) => ({
             ...current,
             assessmentDate:
               assessmentDate === '' ? todayIsoDate(new Date()) : assessmentDate,
           }))
         }
         onScore={setScore}
+        onStartNew={startNewAssessment}
       />
       {result ? (
         <Results result={result} />

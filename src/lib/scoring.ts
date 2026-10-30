@@ -38,7 +38,7 @@ export function ragForTenths(tenths: number): Rag {
   if (tenths >= 40) {
     return 'Green'
   }
-  if (tenths >= 30) {
+  if (tenths >= 35) {
     return 'Amber'
   }
   return 'Red'

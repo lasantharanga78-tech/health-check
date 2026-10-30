@@ -6,11 +6,11 @@ describe('scoring', () => {
     expect(formatTenths(areaTenths([5, 4, 4, 4]))).toBe('4.3')
   })
 
-  it('DHC-2 AC2: scores 4.0, 3.9, 3.0 and 2.9 give Green, Amber, Amber, Red', () => {
+  it('DHC-8 AC1: scores 4.0, 3.9, 3.5 and 3.4 give Green, Amber, Amber, Red', () => {
     expect(ragForTenths(40)).toBe('Green')
     expect(ragForTenths(39)).toBe('Amber')
-    expect(ragForTenths(30)).toBe('Amber')
-    expect(ragForTenths(29)).toBe('Red')
+    expect(ragForTenths(35)).toBe('Amber')
+    expect(ragForTenths(34)).toBe('Red')
   })
 
   it('DHC-2 AC3: area scores 4.3, 4.3, 4.3, 4.3 and 4.0 score 4.2 overall', () => {

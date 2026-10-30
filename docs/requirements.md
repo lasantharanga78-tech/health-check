@@ -1,7 +1,7 @@
 # Delivery Health Check — requirements
 
-**Version 1.1**
-**Date:** 29 October 2026
+**Version 1.2**
+**Date:** 30 October 2026
 
 ## Change log
 
@@ -9,10 +9,11 @@
 | --- | --- | --- |
 | 1.0 | 29 October 2026 | First version. Six stories for the single-page health check. |
 | 1.1 | 29 October 2026 | Made date, rounding, results visibility, the saved shape, and print testable, and added the missing score and RAG cases. |
+| 1.2 | 30 October 2026 | DHC-8: Red is a rounded score below 3.5. Amber is 3.5 to 3.9. Green stays 4.0 and above. |
 
 ## Assumptions
 
-The idea brief leaves these points open. Version 1.1 uses the choices below.
+The idea brief leaves these points open. Version 1.2 uses the choices below.
 
 1. **Reader of the stories.** The consultant runs the session, usually with the delivery lead. Every story is for the delivery consultant.
 2. **When results appear.** Results stay out of the page until the engagement name contains at least one character other than a normal space (U+0020) and all 20 statements have a score. A tab, a non-breaking space, an emoji, or a letter all count. A name made only of normal spaces does not. Leading and trailing spaces are kept. Until results appear, the page shows exactly: `Enter the engagement name and answer all 20 statements to see results.` That sentence is absent while results are shown. A blank client is allowed. The client is kept as typed and is blank only when its text is empty. The date always has a value.
@@ -125,8 +126,8 @@ As a delivery consultant, I want each area and the overall result scored as Red,
 | Band | Rounded score | Examples |
 | --- | --- | --- |
 | Green | 4.0 and above | 4.0 and 5.0 are Green |
-| Amber | 3.0 to 3.9 | 3.0, 3.8, and 3.9 are Amber. 3.75 rounds to 3.8 before the band is chosen |
-| Red | Below 3.0 | 2.8 and 2.9 are Red. 2.75 rounds to 2.8 before the band is chosen |
+| Amber | 3.5 to 3.9 | 3.5, 3.8, and 3.9 are Amber. 3.75 rounds to 3.8 before the band is chosen |
+| Red | Below 3.5 | 3.4 and 2.9 are Red. 2.75 rounds to 2.8 before the band is chosen |
 
 **AC3.** The overall score is the exact sum of the five rounded area scores divided by 5, then rounded to one decimal place with the same half-up rule. Use the one-decimal area scores as written, not a binary approximation of them.
 

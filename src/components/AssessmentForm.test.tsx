@@ -83,6 +83,7 @@ function Harness() {
         }))
       }
       onScore={setScore}
+      onStartNew={() => {}}
     />
   )
 }

@@ -9,6 +9,7 @@ type AssessmentFormProps = {
   onClient: (client: string) => void
   onDate: (assessmentDate: string) => void
   onScore: (index: number, score: Score) => void
+  onStartNew: () => void
 }
 
 export function AssessmentForm({
@@ -17,6 +18,7 @@ export function AssessmentForm({
   onClient,
   onDate,
   onScore,
+  onStartNew,
 }: AssessmentFormProps) {
   return (
     <form>
@@ -82,6 +84,9 @@ export function AssessmentForm({
           })}
         </section>
       ))}
+      <button type="button" className="start-new" onClick={onStartNew}>
+        Start new assessment
+      </button>
     </form>
   )
 }

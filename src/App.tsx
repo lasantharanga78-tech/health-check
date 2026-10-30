@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { AssessmentForm } from './components/AssessmentForm.tsx'
-import { todayIsoDate } from './lib/storage.ts'
+import { Results } from './components/Results.tsx'
+import { scoreAssessment } from './lib/scoring.ts'
+import { canShowResults, todayIsoDate } from './lib/storage.ts'
 import type { Assessment, Score } from './lib/types.ts'
 
 function emptyAssessment(today: string): Assessment {
@@ -25,6 +27,11 @@ export default function App() {
     })
   }
 
+  const showResults = canShowResults(assessment)
+  const result = showResults
+    ? scoreAssessment(assessment.scores.filter((score): score is Score => score !== null))
+    : null
+
   return (
     <>
       <h1>Delivery Health Check</h1>
@@ -43,6 +50,11 @@ export default function App() {
         }
         onScore={setScore}
       />
+      {result ? (
+        <Results result={result} />
+      ) : (
+        <p>Enter the engagement name and answer all 20 statements to see results.</p>
+      )}
     </>
   )
 }

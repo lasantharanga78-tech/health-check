@@ -73,3 +73,53 @@ legend {
   align-items: center;
   font-weight: 400;
 }
+
+.results {
+  margin-top: 2rem;
+}
+
+.results p:first-child {
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.results table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.results th,
+.results td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #d0d0d0;
+}
+
+.rag-red,
+.rag-amber,
+.rag-green {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 650;
+}
+
+.rag-red {
+  background: #d64545;
+  color: #fff;
+}
+
+.rag-amber {
+  background: #e6a317;
+  color: #1a1a1a;
+}
+
+.rag-green {
+  background: #2f9e44;
+  color: #fff;
+}
+
+.area-chart {
+  margin: 1rem 0;
+}

@@ -21,7 +21,7 @@ export function AssessmentForm({
   onStartNew,
 }: AssessmentFormProps) {
   return (
-    <form>
+    <form className="no-print">
       <div className="details">
         <label>
           Engagement name
@@ -84,7 +84,7 @@ export function AssessmentForm({
           })}
         </section>
       ))}
-      <button type="button" className="start-new" onClick={onStartNew}>
+      <button type="button" className="start-new no-print" onClick={onStartNew}>
         Start new assessment
       </button>
     </form>

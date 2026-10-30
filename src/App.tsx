@@ -49,6 +49,13 @@ export default function App() {
   return (
     <>
       <h1>Delivery Health Check</h1>
+      <div className="print-only">
+        <p className="print-name">{assessment.engagementName}</p>
+        <p>
+          <span className="print-label">Client</span> {assessment.client}
+        </p>
+        <p>{assessment.assessmentDate}</p>
+      </div>
       <AssessmentForm
         assessment={assessment}
         onName={(engagementName) =>
@@ -66,9 +73,16 @@ export default function App() {
         onStartNew={startNewAssessment}
       />
       {result ? (
-        <Results result={result} />
+        <>
+          <button type="button" className="print-button no-print" onClick={() => window.print()}>
+            Print / Save as PDF
+          </button>
+          <Results result={result} />
+        </>
       ) : (
-        <p>Enter the engagement name and answer all 20 statements to see results.</p>
+        <p className="no-print">
+          Enter the engagement name and answer all 20 statements to see results.
+        </p>
       )}
     </>
   )
